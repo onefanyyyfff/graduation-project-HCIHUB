@@ -15,8 +15,8 @@
                     <el-option
                     v-for="(author,index) in authors"
                     :key="index"
-                    :label="author"
-                    :value="author">
+                    :label="author.name"
+                    :value="author.name">
                     </el-option>
                 </el-select>
                 <el-select v-model="conferenceValue" multiple placeholder="conference" slot="append" style="width:150px;margin-left:30px;">
@@ -35,16 +35,16 @@
         <div class="result">
             <div v-for="(result,index) in results" :key="index" class="res-item">
                 <div class="title">
-                    <span>{{index+1}}.</span>
-                    <span>{{result.title}}</span>
+                    <a :href="result.url" class="title-link">{{index+1}}.</a>
+                    <a :href="result.url" class="title-link">{{result.title}}</a>
                 </div>
                 <div class="detail-info">
                     <span>{{result.conf}}  ·  </span>
-                    <span v-for="(author,index) in result.authors" :key="index">{{author}}  ·  </span>
+                    <a v-for="(author,index) in result.authors" :key="index" :href="author.link" class="author-link">{{author.name}}</a>
                     <span>{{result.date}}  </span>
                 </div>
                 <div class="summary">
-                    <p>Summary:{{result.summary}}</p>
+                    <a  :href="result.url" class="summary-link"><p>Summary:{{result.summary}}</p></a>
                 </div>
             </div>
         </div>
@@ -57,7 +57,7 @@ export default {
         return {
             search:'',
             input:'',
-            newSearch:this.$route.query.d,
+            newSearch:this.$route.query.q,
             timeValue:'',
             authorValue:'',
             conferenceValue:'',
@@ -72,7 +72,7 @@ export default {
     },
     methods: {    
        getOriginList() {
-            this.$http.get(`http://166.111.139.110:8080/search/?title=${this.search}`)
+            this.$http.get(`http://166.111.139.110:8080/search/?query=${this.search}`)
             .then(res => {
                 console.log(res)
                 //all result
@@ -113,12 +113,11 @@ export default {
         },
         getNewList() {
             this.$http.post('http://166.111.139.110:8080/search_post/', {
-                title:this.newSearch,
+                query:this.newSearch,
                 year: this.timeValue,
                 authors: this.authorValue,
                 conf: this.conferenceValue
             }).then(res => {
-                alert("123")
                 console.log(res)
                 this.results = res.body;
                 for(let i = 0;i<this.results.length;i++) {
@@ -139,13 +138,13 @@ export default {
                 this.conferences = Array.from(new Set(this.conferences))
                 this.conferences.sort()
                 this.$router.push({
-                    path: '/detail?d='+this.newSearch+''
+                    path: '/detail?q='+this.newSearch+''
                 })
             })
         }
     },
     created () {
-        this.search = this.$route.query.d,
+        this.search = this.$route.query.q,
         this.getOriginList()
     }
 }
@@ -205,5 +204,18 @@ export default {
 }
 .summary {
     font-size: 0.9vw;
+}
+.title-link {
+    text-decoration: none;
+    color: #2c3e50;
+}
+.author-link {
+    text-decoration: none;
+    color: rgb(164,164,164);
+    padding-right: 10px;
+}
+.summary-link {
+    text-decoration: none;
+    color: #2c3e50;
 }
 </style>

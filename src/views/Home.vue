@@ -50,7 +50,7 @@ export default {
         toDetail() {
             console.log(this.state)
             this.$router.push({
-                path: '/detail?d='+this.state+''
+                path: '/detail?q='+this.state+''
             })
         }
     },
