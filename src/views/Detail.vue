@@ -69,9 +69,9 @@
             <!-- <div class="sort-way">
                 <span></span>
             </div> -->
-            <div v-for="(result,index) in results.slice((currentPage-1)*pageSize+1,currentPage*pageSize+1)" :key="index" class="res-item">
+            <div v-for="(result,index) in results.slice((currentPage-1)*pageSize,currentPage*pageSize)" :key="index" class="res-item">
                 <div class="title">
-                    <a :href="result.url" class="title-link" target="_blank">{{index+1}}.</a>
+                    <a :href="result.url" class="title-link" target="_blank">{{(currentPage-1)*pageSize+index+1}}.</a>
                     <a :href="result.url" class="title-link" target="_blank"><span v-html="result.title"></span></a>
                 </div>
                 <div class="detail-info">
@@ -95,7 +95,7 @@
                 :page-sizes="[10, 20, 50, 100,200]"
                 :page-size="pageSize"
                 layout="sizes, prev, pager, next"
-                :page-count="results.length%pageSize==0?results.length/pageSize:results.length/pageSize+1">
+                :page-count="Math.ceil(results.length/pageSize)">
             </el-pagination>
         </div>
     </div>  
