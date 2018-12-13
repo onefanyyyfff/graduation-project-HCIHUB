@@ -2,7 +2,6 @@
 <div id="detail">
     <div class="top-content">
         <div class="search">
-            HCIHUB
             <el-input v-model="newSearch" class="input-with-select">
                 <el-select v-model="timeValue" multiple placeholder="time" slot="prepend" style="width:120px;">
                     <el-option
@@ -31,25 +30,40 @@
                 <el-button slot="append" icon="el-icon-search" style="margin-left:30px" @click="getNewList()"></el-button>
             </el-input>
         </div>
+        
     </div>
     <div class="bottom-content">
         <div class="result">
-            <div v-for="(result,index) in results" :key="index" class="res-item">
+            <div v-for="(result,index) in results.slice((currentPage-1)*pageSize+1,currentPage*pageSize+1)" :key="index" class="res-item">
                 <div class="title">
                     <a :href="result.url" class="title-link" target="_blank">{{index+1}}.</a>
                     <a :href="result.url" class="title-link" target="_blank"><span v-html="result.title"></span></a>
                 </div>
                 <div class="detail-info">
-                    <span>{{result.conf}}  ·  </span>
+                    <span>{{result.date}} </span>
+                    <span>{{result.conf}} </span>
                     <a v-for="(author,index) in result.authors" :key="index" :href="author.link" class="author-link" target="_blank">{{author.name}}</a>
-                    <span>{{result.date}}  </span>
                 </div>
                 <div class="summary">
                     <a  :href="result.url" class="summary-link" target="_blank"><p>Summary:<span v-html="result.summary"></span></p></a>
                 </div>
             </div>
         </div>
-    </div>   
+        <div class="page">
+            <el-pagination
+                @size-change="handleSizeChange"
+                @current-change="handleCurrentChange"
+                :current-page.sync="currentPage"
+                :page-sizes="[10, 20, 50, 100,200]"
+                :page-size="pageSize"
+                layout="sizes, prev, pager, next"
+                :total="1000">
+            </el-pagination>
+        </div>
+    </div>  
+    <div class="footer">
+        <div class="footer-content">Copyright © 2017 清华大学 · 人机交互实验室 </div>
+    </div> 
 </div>
 </template>
 <script>
@@ -65,13 +79,23 @@ export default {
             times: [],
             authors:[],
             conferences:[],
-            results: []
+            results: [],
+            currentPage: 1,
+            pageSize:10
         }
     },
     mounted() {
         
     },
     methods: {    
+       handleSizeChange(val) {
+           this.pageSize = val
+            console.log(`每页 ${val} 条`);
+       },
+       handleCurrentChange(val) {
+           this.currentPage = val;
+            console.log(`当前页: ${val}`);
+       },
        getOriginList() {
             this.$http.get(`http://166.111.139.127:8080/search/?query=${this.search}`)
             .then(res => {
@@ -161,7 +185,7 @@ export default {
     text-align: left;
 }
 .search {
-    width: 75%;
+    width: 70%;
     margin: 0 auto;
     padding-top: 3%;
 }
@@ -187,10 +211,15 @@ export default {
 }
 .result {
     background-color: #fff;
-    width: 75%;
+    width: 70%;
     margin: 0 auto;
     padding: 20px;
     box-shadow:  rgb(230,227,228) 0px 0px 20px;
+}
+.page {
+    width:500px;
+    margin: 0 auto;
+    padding-top: 30px;
 }
 .res-item {
     border-bottom: 1px solid #ccc;
@@ -198,25 +227,45 @@ export default {
 .title {
     font-size:1.1vw;
     padding-top:10px;
+    font-weight:bold;
 }
 .detail-info {
     font-size: 0.9vw;
     color: rgb(164,164,164);
+    padding-top:1px;
 }
 .summary {
-    font-size: 0.9vw;
+    font-size: 1.0vw;
+    position: relative;
+    top: -9px;
+    height: 93px;
+    width:98%;
+    margin-bottom: 4px;
+    overflow:hidden; 
+    text-overflow:ellipsis;
+    display:-webkit-box;    
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:4;
 }
 .title-link {
     text-decoration: none;
     color: #2c3e50;
 }
 .author-link {
-    text-decoration: none;
     color: rgb(164,164,164);
-    padding-right: 10px;
+    padding-right: 8px;
+    font-style:italic;
 }
 .summary-link {
     text-decoration: none;
     color: #2c3e50;
+}
+.footer {
+    padding:10px;
+    font-size: 0.9vw;
+}
+.footer-content {
+    width:280px;
+    margin: 0 auto;
 }
 </style>
