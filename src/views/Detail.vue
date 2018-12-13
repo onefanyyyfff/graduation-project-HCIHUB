@@ -1,7 +1,8 @@
 <template>
 <div id="detail">
     <div class="top-content">
-        <div class="search">
+        <!-- <div class="search">
+            HCIHUB
             <el-input v-model="newSearch" class="input-with-select">
                 <el-select v-model="timeValue" multiple placeholder="time" slot="prepend" style="width:120px;">
                     <el-option
@@ -29,11 +30,45 @@
                 </el-select>
                 <el-button slot="append" icon="el-icon-search" style="margin-left:30px" @click="getNewList()"></el-button>
             </el-input>
+        </div> -->
+        <div class="logo">
+            HCIBIB
         </div>
-        
+        <div class="search">
+            <el-input v-model="newSearch" class="input-with-select">
+                <el-select v-model="timeValue" multiple placeholder="time" slot="prepend" style="width:150px;" collapse-tags>
+                    <el-option
+                        v-for="(time,index) in times"
+                        :key="index"
+                        :label="time"
+                        :value="time">
+                    </el-option>
+                </el-select>
+                <el-select v-model="authorValue" multiple placeholder="author" slot="append" style="width:250px;" collapse-tags>
+                    <el-option
+                    v-for="(author,index) in authors"
+                    :key="index"
+                    :label="author.name"
+                    :value="author.name">
+                    </el-option>
+                </el-select>
+                <el-select v-model="conferenceValue" multiple placeholder="conference" slot="append" style="width:150px;margin-left:30px;" collapse-tags>
+                    <el-option
+                    v-for="(conference,index) in conferences"
+                    :key="index"
+                    :label="conference"
+                    :value="conference">
+                    </el-option>
+                </el-select>
+                <el-button slot="append" icon="el-icon-search" style="margin-left:30px" @click="getNewList()"></el-button>
+            </el-input>
+        </div>
     </div>
     <div class="bottom-content">
         <div class="result">
+            <!-- <div class="sort-way">
+                <span></span>
+            </div> -->
             <div v-for="(result,index) in results.slice((currentPage-1)*pageSize+1,currentPage*pageSize+1)" :key="index" class="res-item">
                 <div class="title">
                     <a :href="result.url" class="title-link" target="_blank">{{index+1}}.</a>
@@ -187,13 +222,17 @@ export default {
 .search {
     width: 70%;
     margin: 0 auto;
-    padding-top: 3%;
+    padding-top: 2.3%;
 }
 .top-content {
-    height: 18%;
+    height: 15%;
 }
-.el-select .el-input {
-    width: 130px;
+.logo {
+    font-size: 3.7vw;
+    font-weight: bolder;
+    color: rgb(173,35,51);
+    margin: 1% 0 0 1.8vw;
+    float: left;
 }
 .input-with-select {
     background-color: #fff;
@@ -204,22 +243,34 @@ export default {
 .el-input-group__append {
     background-color: #fff;
 }
+
+
+
+
+
+
+
+
 .bottom-content {
     background-color: rgb(246,246,246);
-    padding: 20px 0;
+    padding: 0 0 20px 0;
     min-width: 700px;
 }
 .result {
     background-color: #fff;
     width: 70%;
     margin: 0 auto;
-    padding: 20px;
-    box-shadow:  rgb(230,227,228) 0px 0px 20px;
+    padding: 5px 0 5px 0;
+    /* box-shadow:  rgb(230,227,228) 0px 0px 20px; */
 }
 .page {
     width:500px;
     margin: 0 auto;
     padding-top: 30px;
+}
+.sort-way {
+    height: 50px;
+    background-color: rgba(181,73,91,0.2);
 }
 .res-item {
     border-bottom: 1px solid #ccc;
@@ -228,11 +279,13 @@ export default {
     font-size:1.1vw;
     padding-top:10px;
     font-weight:bold;
+    padding: 10px 20px 0 20px;
 }
 .detail-info {
     font-size: 0.9vw;
     color: rgb(164,164,164);
     padding-top:1px;
+    padding: 0 20px;
 }
 .summary {
     font-size: 1.0vw;
@@ -246,6 +299,10 @@ export default {
     display:-webkit-box;    
     -webkit-box-orient:vertical;
     -webkit-line-clamp:4;
+    padding: 0 20px;
+}
+.summary p {
+    padding-right: 20px;
 }
 .title-link {
     text-decoration: none;
