@@ -79,8 +79,11 @@
                     <span>{{result.conf}} </span>
                     <a v-for="(author,index) in result.authors" :key="index" :href="author.link" class="author-link" target="_blank">{{author.name}}</a>
                 </div>
-                <div class="summary">
-                    <a  :href="result.url" class="summary-link" target="_blank"><p>Summary:<span v-html="result.summary"></span></p></a>
+                <div class="summary" v-if="showPiece != index" @click="showPiece = index" ref="resDom">
+                    <div>Summary:<span v-html="result.summary"></span></div>
+                </div>
+                <div class="summary-all" v-else @click="showPiece = -1">
+                    <div>Summary:<span v-html="result.summary"></span></div>
                 </div>
             </div>
         </div>
@@ -92,7 +95,7 @@
                 :page-sizes="[10, 20, 50, 100,200]"
                 :page-size="pageSize"
                 layout="sizes, prev, pager, next"
-                :total="1000">
+                :page-count="results.length%pageSize==0?results.length/pageSize:results.length/pageSize+1">
             </el-pagination>
         </div>
     </div>  
@@ -116,13 +119,25 @@ export default {
             conferences:[],
             results: [],
             currentPage: 1,
-            pageSize:10
+            pageSize:10,
+            screenWidth:'',
+            showPiece: -1
         }
     },
     mounted() {
         
     },
-    methods: {    
+    watch: {
+        screenWidth (val) {
+            this.screenWidth = val
+        }
+    },
+    methods: {   
+       changeTopContent() { 
+            if(this.screenWidth >500) {
+                console.log(this.screenWidth)
+            }
+       }, 
        handleSizeChange(val) {
            this.pageSize = val
             console.log(`每页 ${val} 条`);
@@ -180,6 +195,7 @@ export default {
             }).then(res => {
                 console.log(res)
                 this.results = res.body;
+                this.results.sort(this.sortResult('date'))
                 for(let i = 0;i<this.results.length;i++) {
                     this.times.push(this.results[i].date)
                 }
@@ -205,7 +221,8 @@ export default {
     },
     created () {
         this.search = this.$route.query.q,
-        this.getOriginList()
+        this.getOriginList(),
+        this.changeTopContent()
     }
 }
 </script>
@@ -289,19 +306,25 @@ export default {
 }
 .summary {
     font-size: 1.0vw;
-    position: relative;
-    top: -9px;
-    height: 93px;
     width:98%;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
     overflow:hidden; 
     text-overflow:ellipsis;
     display:-webkit-box;    
     -webkit-box-orient:vertical;
-    -webkit-line-clamp:4;
+    -webkit-line-clamp:3;
     padding: 0 20px;
 }
-.summary p {
+.summary-all {
+    font-size: 1.0vw;
+    width:98%;
+    margin-bottom: 3px;
+    padding: 0 20px;
+}
+.summary div {
+    padding-right: 20px;
+}
+.summary-all div {
     padding-right: 20px;
 }
 .title-link {
