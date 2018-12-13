@@ -2,6 +2,7 @@
 <div id="detail">
     <div class="top-content">
         <div class="search">
+            HCIHUB
             <el-input v-model="newSearch" class="input-with-select">
                 <el-select v-model="timeValue" multiple placeholder="time" slot="prepend" style="width:120px;">
                     <el-option
@@ -35,16 +36,16 @@
         <div class="result">
             <div v-for="(result,index) in results" :key="index" class="res-item">
                 <div class="title">
-                    <a :href="result.url" class="title-link">{{index+1}}.</a>
-                    <a :href="result.url" class="title-link">{{result.title}}</a>
+                    <a :href="result.url" class="title-link" target="_blank">{{index+1}}.</a>
+                    <a :href="result.url" class="title-link" target="_blank"><span v-html="result.title"></span></a>
                 </div>
                 <div class="detail-info">
                     <span>{{result.conf}}  ·  </span>
-                    <a v-for="(author,index) in result.authors" :key="index" :href="author.link" class="author-link">{{author.name}}</a>
+                    <a v-for="(author,index) in result.authors" :key="index" :href="author.link" class="author-link" target="_blank">{{author.name}}</a>
                     <span>{{result.date}}  </span>
                 </div>
                 <div class="summary">
-                    <a  :href="result.url" class="summary-link"><p>Summary:{{result.summary}}</p></a>
+                    <a  :href="result.url" class="summary-link" target="_blank"><p>Summary:<span v-html="result.summary"></span></p></a>
                 </div>
             </div>
         </div>
@@ -72,7 +73,7 @@ export default {
     },
     methods: {    
        getOriginList() {
-            this.$http.get(`http://166.111.139.110:8080/search/?query=${this.search}`)
+            this.$http.get(`http://166.111.139.127:8080/search/?query=${this.search}`)
             .then(res => {
                 console.log(res)
                 //all result
@@ -112,7 +113,7 @@ export default {
             return b - a
         },
         getNewList() {
-            this.$http.post('http://166.111.139.110:8080/search_post/', {
+            this.$http.post('http://166.111.139.127:8080/search_post/', {
                 query:this.newSearch,
                 year: this.timeValue,
                 authors: this.authorValue,
@@ -162,10 +163,10 @@ export default {
 .search {
     width: 75%;
     margin: 0 auto;
-    padding-top: 5%;
+    padding-top: 3%;
 }
 .top-content {
-    height: 26%;
+    height: 18%;
 }
 .el-select .el-input {
     width: 130px;
