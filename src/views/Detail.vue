@@ -1,41 +1,11 @@
 <template>
 <div id="detail">
     <div class="top-content">
-        <!-- <div class="search">
-            HCIHUB
-            <el-input v-model="newSearch" class="input-with-select">
-                <el-select v-model="timeValue" multiple placeholder="time" slot="prepend" style="width:120px;">
-                    <el-option
-                        v-for="(time,index) in times"
-                        :key="index"
-                        :label="time"
-                        :value="time">
-                    </el-option>
-                </el-select>
-                <el-select v-model="authorValue" multiple placeholder="author" slot="append" style="width:200px;">
-                    <el-option
-                    v-for="(author,index) in authors"
-                    :key="index"
-                    :label="author.name"
-                    :value="author.name">
-                    </el-option>
-                </el-select>
-                <el-select v-model="conferenceValue" multiple placeholder="conference" slot="append" style="width:150px;margin-left:30px;">
-                    <el-option
-                    v-for="(conference,index) in conferences"
-                    :key="index"
-                    :label="conference"
-                    :value="conference">
-                    </el-option>
-                </el-select>
-                <el-button slot="append" icon="el-icon-search" style="margin-left:30px" @click="getNewList()"></el-button>
-            </el-input>
-        </div> -->
         <div class="logo">
-            HCIBIB
+            <a href="/">HCIBIB</a>
         </div>
         <div class="search">
-            <el-input v-model="newSearch" class="input-with-select">
+            <el-input v-model="newSearch" class="input-with-select" @keyup.enter.native="getNewList()">
                 <el-select v-model="timeValue" multiple placeholder="time" slot="prepend" style="width:150px;" collapse-tags>
                     <el-option
                         v-for="(time,index) in times"
@@ -44,7 +14,7 @@
                         :value="time">
                     </el-option>
                 </el-select>
-                <el-select v-model="authorValue" multiple placeholder="author" slot="append" style="width:250px;" collapse-tags>
+                <el-select v-model="authorValue" multiple placeholder="author" slot="append" style="width:200px;" collapse-tags>
                     <el-option
                     v-for="(author,index) in authors"
                     :key="index"
@@ -52,41 +22,45 @@
                     :value="author.name">
                     </el-option>
                 </el-select>
-                <el-select v-model="conferenceValue" multiple placeholder="conference" slot="append" style="width:150px;margin-left:30px;" collapse-tags>
-                    <el-option
-                    v-for="(conference,index) in conferences"
-                    :key="index"
-                    :label="conference"
-                    :value="conference">
-                    </el-option>
-                </el-select>
                 <el-button slot="append" icon="el-icon-search" style="margin-left:30px" @click="getNewList()"></el-button>
             </el-input>
         </div>
     </div>
-    <div class="bottom-content">
-        <div class="result">
-            <!-- <div class="sort-way">
-                <span></span>
-            </div> -->
-            <div v-for="(result,index) in results.slice((currentPage-1)*pageSize,currentPage*pageSize)" :key="index" class="res-item">
-                <div class="title">
-                    <a :href="result.url" class="title-link" target="_blank">{{(currentPage-1)*pageSize+index+1}}.</a>
-                    <a :href="result.url" class="title-link" target="_blank"><span v-html="result.title"></span></a>
+    <div class="bottom">
+        <div class="bottom-content">
+            <div class="select-opt">
+                <div class="conf-title">
+                    <span>conferences</span>
                 </div>
-                <div class="detail-info">
-                    <span>{{result.date}} </span>
-                    <span>{{result.conf}} </span>
-                    <a v-for="(author,index) in result.authors" :key="index" :href="author.link" class="author-link" target="_blank">{{author.name}}</a>
-                </div>
-                <div class="summary" v-if="showPiece != index" @click="showPiece = index" ref="resDom">
-                    <div>Summary:<span v-html="result.summary"></span></div>
-                </div>
-                <div class="summary-all" v-else @click="showPiece = -1">
-                    <div>Summary:<span v-html="result.summary"></span></div>
+                <table class="conf-select">
+                    <tbody>
+                        <tr v-for="(n,index) in conferences.length/2" :key="index">
+                            <td @click="getNewList(2*n-2)">{{conferences[2*n-2]}}</td>
+                            <td @click="getNewList(2*n-1)">{{conferences[2*n-1]}}</td>
+                        </tr>
+                    </tbody>
+                </table>               
+            </div>
+            <div class="result">
+                <div v-for="(result,index) in results.slice((currentPage-1)*pageSize,currentPage*pageSize)" :key="index" class="res-item">
+                    <div class="title">
+                        <a :href="result.url" class="title-link" target="_blank">{{(currentPage-1)*pageSize+index+1}}.</a>
+                        <a :href="result.url" class="title-link" target="_blank"><span v-html="result.title"></span></a>
+                    </div>
+                    <div class="detail-info">
+                        <span>{{result.date}} </span>
+                        <span>{{result.conf}} </span>
+                        <a v-for="(author,index) in result.authors" :key="index" :href="author.link" class="author-link" target="_blank">{{author.name}}</a>
+                    </div>
+                    <div class="summary" v-if="showPiece.indexOf(index)" @click="showPieceFunc(index)">
+                        <div>Summary:<span v-html="result.summary"></span></div>
+                    </div>
+                    <div class="summary-all" v-else @click="showPieceFunc(index)">
+                        <div>Summary:<span v-html="result.summary"></span></div>
+                    </div>
                 </div>
             </div>
-        </div>
+        </div>  
         <div class="page">
             <el-pagination
                 @size-change="handleSizeChange"
@@ -98,7 +72,7 @@
                 :page-count="Math.ceil(results.length/pageSize)">
             </el-pagination>
         </div>
-    </div>  
+    </div>
     <div class="footer">
         <div class="footer-content">Copyright © 2017 清华大学 · 人机交互实验室 </div>
     </div> 
@@ -121,7 +95,7 @@ export default {
             currentPage: 1,
             pageSize:10,
             screenWidth:'',
-            showPiece: -1
+            showPiece: []
         }
     },
     mounted() {
@@ -138,6 +112,17 @@ export default {
                 console.log(this.screenWidth)
             }
        }, 
+       showPieceFunc(index) {
+           if(this.showPiece.indexOf(index) == -1) {
+               this.showPiece.push(index)
+               console.log(this.showPiece)
+           }
+           else {
+               console.log(this.showPiece.indexOf(index))
+               this.showPiece.splice(this.showPiece.indexOf(index),1)
+               console.log(this.showPiece)
+           }
+       },
        handleSizeChange(val) {
            this.pageSize = val
             console.log(`每页 ${val} 条`);
@@ -173,6 +158,7 @@ export default {
                 }
                 this.conferences = Array.from(new Set(this.conferences))
                 this.conferences.sort()
+                console.log(this.conferences)
             })
         },
         sortResult(property){
@@ -186,12 +172,12 @@ export default {
         {
             return b - a
         },
-        getNewList() {
+        getNewList(n) {
             this.$http.post('http://166.111.139.127:8080/search_post/', {
                 query:this.newSearch,
                 year: this.timeValue,
                 authors: this.authorValue,
-                conf: this.conferenceValue
+                conf: this.conferences[n]
             }).then(res => {
                 console.log(res)
                 this.results = res.body;
@@ -236,20 +222,28 @@ export default {
     top: 0;
     text-align: left;
 }
-.search {
-    width: 70%;
-    margin: 0 auto;
-    padding-top: 2.3%;
-}
 .top-content {
-    height: 15%;
+    height: 100px;
+    width: 73%;
+    margin: 0 auto;
+    display: flex;
+    background-color: #fff;
 }
-.logo {
-    font-size: 3.7vw;
-    font-weight: bolder;
+.logo {   
     color: rgb(173,35,51);
-    margin: 1% 0 0 1.8vw;
-    float: left;
+    margin: 0 20px 0 0;
+    width:200px;
+}
+.logo a {
+    font-size: 50px;
+    line-height: 100px;
+    font-weight: bolder;
+    text-decoration: none;
+    color: rgb(173,35,51);
+}
+.search {
+    flex: 1;
+    padding-top: 30px;
 }
 .input-with-select {
     background-color: #fff;
@@ -268,26 +262,49 @@ export default {
 
 
 
-.bottom-content {
+.bottom {
     background-color: rgb(246,246,246);
     padding: 0 0 20px 0;
     min-width: 700px;
 }
+.bottom-content {
+    width: 73%;
+    margin: 0 auto;
+    display: flex; 
+}
+.select-opt {
+    width: 200px;
+    background-color: #fff;
+    margin-right: 20px;
+}
+.conf-title {
+    height: 50px;
+    background-color: rgba(181,73,91,0.2);
+    color: rgb(133,15,31);
+    text-align: center;
+}
+.conf-title span {
+    line-height: 50px; 
+    font-size: 20px; 
+}
+td {
+    overflow: scroll;
+    font-size: 12px;
+    color: rgb(133,15,31);
+    padding-right: 30px;
+    cursor: pointer;
+}
 .result {
     background-color: #fff;
-    width: 70%;
+    width: 60%;
     margin: 0 auto;
     padding: 5px 0 5px 0;
-    /* box-shadow:  rgb(230,227,228) 0px 0px 20px; */
+    flex:1;
 }
 .page {
     width:500px;
     margin: 0 auto;
     padding-top: 30px;
-}
-.sort-way {
-    height: 50px;
-    background-color: rgba(181,73,91,0.2);
 }
 .res-item {
     border-bottom: 1px solid #ccc;
