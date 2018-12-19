@@ -177,9 +177,10 @@ export default {
                 query:this.newSearch,
                 year: this.timeValue,
                 authors: this.authorValue,
-                conf: this.conferences[n]
+                conf: n ? [this.conferences[n]] : []
             }).then(res => {
                 console.log(res)
+                console.log([this.conferences[n]])
                 this.results = res.body;
                 this.results.sort(this.sortResult('date'))
                 for(let i = 0;i<this.results.length;i++) {
