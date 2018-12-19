@@ -52,10 +52,10 @@
                         <span>{{result.conf}} </span>
                         <a v-for="(author,index) in result.authors" :key="index" :href="author.link" class="author-link" target="_blank">{{author.name}}</a>
                     </div>
-                    <div class="summary" v-if="showPiece.indexOf(index)" @click="showPieceFunc(index)">
+                    <div class="summary" v-if="!result.openFlag" @click="showPieceFunc(result,index)">
                         <div>Summary:<span v-html="result.summary"></span></div>
                     </div>
-                    <div class="summary-all" v-else @click="showPieceFunc(index)">
+                    <div class="summary-all" v-else @click="showPieceFunc(result,index)">
                         <div>Summary:<span v-html="result.summary"></span></div>
                     </div>
                 </div>
@@ -79,6 +79,7 @@
 </div>
 </template>
 <script>
+import Vue from 'vue'
 export default {
     data () {
         return {
@@ -112,16 +113,19 @@ export default {
                 console.log(this.screenWidth)
             }
        }, 
-       showPieceFunc(index) {
-           if(this.showPiece.indexOf(index) == -1) {
-               this.showPiece.push(index)
-               console.log(this.showPiece)
-           }
-           else {
-               console.log(this.showPiece.indexOf(index))
-               this.showPiece.splice(this.showPiece.indexOf(index),1)
-               console.log(this.showPiece)
-           }
+       showPieceFunc(result,index) {
+        //    if(this.showPiece.indexOf(index) == -1) {
+        //        this.showPiece.push(index)
+        //    }
+        //    else {
+        //        this.showPiece.splice(this.showPiece.indexOf(index),1)
+        //    }
+            if(!result.openFlag) {
+                Vue.set(result,'openFlag',true)
+            }
+            else {
+                Vue.set(result,'openFlag',false)
+            }
        },
        handleSizeChange(val) {
            this.pageSize = val
@@ -179,8 +183,6 @@ export default {
                 authors: this.authorValue,
                 conf: n ? [this.conferences[n]] : []
             }).then(res => {
-                console.log(res)
-                console.log([this.conferences[n]])
                 this.results = res.body;
                 this.results.sort(this.sortResult('date'))
                 for(let i = 0;i<this.results.length;i++) {
