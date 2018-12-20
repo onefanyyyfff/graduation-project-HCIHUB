@@ -34,7 +34,7 @@
                 </div>
                 <table class="conf-select">
                     <tbody>
-                        <tr v-for="(n,index) in conferences.length/2" :key="index">
+                        <tr v-for="(n,index) in Math.round(conferences.length/2)" :key="index">
                             <td @click="getNewList(2*n-2)">{{conferences[2*n-2]}}</td>
                             <td @click="getNewList(2*n-1)">{{conferences[2*n-1]}}</td>
                         </tr>
