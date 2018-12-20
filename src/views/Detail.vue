@@ -291,7 +291,6 @@ export default {
     font-size: 20px; 
 }
 td {
-    overflow: scroll;
     font-size: 12px;
     color: rgb(133,15,31);
     padding-right: 30px;
