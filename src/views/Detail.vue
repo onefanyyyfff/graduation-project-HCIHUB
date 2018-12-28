@@ -18,8 +18,8 @@
                     <el-option
                     v-for="(author,index) in authors"
                     :key="index"
-                    :label="author.name"
-                    :value="author.name">
+                    :label="author"
+                    :value="author">
                     </el-option>
                 </el-select>
                 <el-button slot="append" icon="el-icon-search" style="margin-left:30px" @click="getNewList()"></el-button>
@@ -42,7 +42,7 @@
                 </table>               
             </div>
             <div class="result">
-                <div v-for="(result,index) in results.slice((currentPage-1)*pageSize,currentPage*pageSize)" :key="index" class="res-item">
+                <div v-for="(result,index) in results" :key="index" class="res-item">
                     <div class="title">
                         <a :href="result.url" class="title-link" target="_blank">{{(currentPage-1)*pageSize+index+1}}.</a>
                         <a :href="result.url" class="title-link" target="_blank"><span v-html="result.title"></span></a>
@@ -63,13 +63,10 @@
         </div>  
         <div class="page">
             <el-pagination
-                @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
                 :current-page.sync="currentPage"
-                :page-sizes="[10, 20, 50, 100,200]"
-                :page-size="pageSize"
                 layout="sizes, prev, pager, next"
-                :page-count="Math.ceil(results.length/pageSize)">
+                :page-count="Math.ceil(resNum/10)">
             </el-pagination>
         </div>
     </div>
@@ -96,7 +93,8 @@ export default {
             currentPage: 1,
             pageSize:10,
             screenWidth:'',
-            showPiece: []
+            showPiece: [],
+            resNum:[]
         }
     },
     mounted() {
@@ -114,12 +112,6 @@ export default {
             }
        }, 
        showPieceFunc(result,index) {
-        //    if(this.showPiece.indexOf(index) == -1) {
-        //        this.showPiece.push(index)
-        //    }
-        //    else {
-        //        this.showPiece.splice(this.showPiece.indexOf(index),1)
-        //    }
             if(!result.openFlag) {
                 Vue.set(result,'openFlag',true)
             }
@@ -127,42 +119,40 @@ export default {
                 Vue.set(result,'openFlag',false)
             }
        },
-       handleSizeChange(val) {
-           this.pageSize = val
-            console.log(`每页 ${val} 条`);
-       },
        handleCurrentChange(val) {
            this.currentPage = val;
-            console.log(`当前页: ${val}`);
+           this.$http.post('http://localhost:8080/search_post/', {
+                query:this.newSearch,
+                year: this.timeValue,
+                authors: this.authorValue,
+                conf: [],
+                index: val+1
+            }).then(res => {
+                this.results = res.body;
+                this.$router.push({
+                    path: '/detail?q='+this.newSearch+''
+                })
+            })
        },
        getOriginList() {
-            this.$http.get(`http://166.111.139.127:8080/search/?query=${this.search}`)
+            this.$http.get(`http://localhost:8080/search_post/?query=${this.search}&index=1`)
+            .then(res => {
+                //all result
+                // console.log(res)
+                // console.log(this.newSearch)   
+                // console.log(this.timeValue) 
+                // console.log(this.authorValue) 
+                // console.log(n||n==0 ? [this.conferences[n]] : [])  
+                // console.log(this.currentPage)        
+                this.results = res.body;
+            })
+            this.$http.get(`http://localhost:8080/search_info_post/?query=${this.search}`)
             .then(res => {
                 console.log(res)
-                //all result
-                this.results = res.body;
-                this.results.sort(this.sortResult('date'))
-                //time
-                for(let i = 0;i<this.results.length;i++) {
-                    this.times.push(this.results[i].date)
-                }
-                this.times = Array.from(new Set(this.times))
-                this.times.sort(this.sortTime)
-                //authors
-                for(let i = 0;i<this.results.length;i++) {
-                    for(let j=0;j<this.results[i].authors.length;j++) {
-                        this.authors.push(this.results[i].authors[j])
-                    }
-                }
-                this.authors = Array.from(new Set(this.authors))
-                this.authors.sort()
-                //conf
-                for(let i = 0;i<this.results.length;i++) {
-                    this.conferences.push(this.results[i].conf)
-                }
-                this.conferences = Array.from(new Set(this.conferences))
-                this.conferences.sort()
-                console.log(this.conferences)
+                this.conferences = res.body.confs,
+                this.times = res.body.years,
+                this.authors = res.body.authors,
+                this.resNum = res.body.num
             })
         },
         sortResult(property){
@@ -177,35 +167,57 @@ export default {
             return b - a
         },
         getNewList(n) {
-            this.$http.post('http://166.111.139.127:8080/search_post/', {
+            this.$http.post('http://localhost:8080/search_info_post/' , {
                 query:this.newSearch,
                 year: this.timeValue,
                 authors: this.authorValue,
-                conf: n ? [this.conferences[n]] : []
+                conf: n||n==0 ? [this.conferences[n]] : []
             }).then(res => {
+                console.log(res)
+                this.conferences = res.body.confs,
+                this.times = res.body.years,
+                this.authors = res.body.authors,
+                this.resNum = res.body.num
+            })
+            this.$http.post('http://localhost:8080/search_post/', {
+                query:this.newSearch,
+                year: this.timeValue,
+                authors: this.authorValue,
+                conf: n||n==0 ? [this.conferences[n]] : [],
+                index: this.currentPage
+            }).then(res => {
+                console.log(res)
+                console.log(this.newSearch)   
+                console.log(this.timeValue) 
+                console.log(this.authorValue) 
+                console.log(n||n==0 ? [this.conferences[n]] : [])  
+                console.log(this.currentPage)        
                 this.results = res.body;
-                this.results.sort(this.sortResult('date'))
-                for(let i = 0;i<this.results.length;i++) {
-                    this.times.push(this.results[i].date)
-                }
-                this.times = Array.from(new Set(this.times))
-                this.times.sort(this.sortNumber)
-                for(let i = 0;i<this.results.length;i++) {
-                    for(let j=0;j<this.results[i].authors.length;j++) {
-                        this.authors.push(this.results[i].authors[j])
-                    }
-                }
-                this.authors = Array.from(new Set(this.authors))
-                this.authors.sort()
-                for(let i = 0;i<this.results.length;i++) {
-                    this.conferences.push(this.results[i].conf)
-                }
-                this.conferences = Array.from(new Set(this.conferences))
-                this.conferences.sort()
+                // this.results.sort(this.sortResult('date'))
+                // for(let i = 0;i<this.results.length;i++) {
+                //     this.times.push(this.results[i].date)
+                // }
+                // this.times = Array.from(new Set(this.times))
+                // this.times.sort(this.sortNumber)
+                // for(let i = 0;i<this.results.length;i++) {
+                //     for(let j=0;j<this.results[i].authors.length;j++) {
+                //         this.authors.push(this.results[i].authors[j])
+                //     }
+                // }
+                // this.authors = Array.from(new Set(this.authors))
+                // this.authors.sort()
+                // for(let i = 0;i<this.results.length;i++) {
+                //     this.conferences.push(this.results[i].conf)
+                // }
+                // this.conferences = Array.from(new Set(this.conferences))
+                // console.log(this.conferences)
+                // this.conferences.sort()
+                
                 this.$router.push({
                     path: '/detail?q='+this.newSearch+''
                 })
             })
+            
         }
     },
     created () {
