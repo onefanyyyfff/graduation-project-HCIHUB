@@ -2,7 +2,7 @@
 <div id="detail">
     <div class="top-content">
         <div class="logo">
-            <a href="/">HCIBIB</a>
+            <a href="/">HCIHUB</a>
         </div>
         <div class="search">
             <el-input v-model="newSearch" class="input-with-select" @keyup.enter.native="getNewList()">
@@ -66,7 +66,7 @@
                 @current-change="handleCurrentChange"
                 :current-page.sync="currentPage"
                 layout="sizes, prev, pager, next"
-                :page-count="Math.ceil(resNum/10)">
+                :page-count="Math.floor(resNum/10)">
             </el-pagination>
         </div>
     </div>
@@ -106,11 +106,6 @@ export default {
         }
     },
     methods: {   
-       changeTopContent() { 
-            if(this.screenWidth >500) {
-                console.log(this.screenWidth)
-            }
-       }, 
        showPieceFunc(result,index) {
             if(!result.openFlag) {
                 Vue.set(result,'openFlag',true)
@@ -128,7 +123,8 @@ export default {
                 conf: [],
                 index: val+1
             }).then(res => {
-                this.results = res.body;
+                this.results = res.body.reslist,
+                this.resNum = res.body.num,
                 this.$router.push({
                     path: '/detail?q='+this.newSearch+''
                 })
@@ -136,24 +132,19 @@ export default {
        },
        getOriginList() {
             this.$http.get(`http://localhost:8080/search_post/?query=${this.search}&index=1`)
-            .then(res => {
-                //all result
-                // console.log(res)
-                // console.log(this.newSearch)   
-                // console.log(this.timeValue) 
-                // console.log(this.authorValue) 
-                // console.log(n||n==0 ? [this.conferences[n]] : [])  
-                // console.log(this.currentPage)        
-                this.results = res.body;
-            })
-            this.$http.get(`http://localhost:8080/search_info_post/?query=${this.search}`)
-            .then(res => {
-                console.log(res)
+            .then(res => {      
+                this.results = res.body.reslist,
+                this.resNum = res.body.num,
                 this.conferences = res.body.confs,
                 this.times = res.body.years,
-                this.authors = res.body.authors,
-                this.resNum = res.body.num
+                this.authors = res.body.authors 
             })
+            // this.$http.get(`http://localhost:8080/search_info_post/?query=${this.search}`)
+            // .then(res => {
+            //     this.conferences = res.body.confs,
+            //     this.times = res.body.years,
+            //     this.authors = res.body.authors              
+            // })
         },
         sortResult(property){
             return function(a,b) {
@@ -167,32 +158,18 @@ export default {
             return b - a
         },
         getNewList(n) {
-            this.$http.post('http://localhost:8080/search_info_post/' , {
-                query:this.newSearch,
-                year: this.timeValue,
-                authors: this.authorValue,
-                conf: n||n==0 ? [this.conferences[n]] : []
-            }).then(res => {
-                console.log(res)
-                this.conferences = res.body.confs,
-                this.times = res.body.years,
-                this.authors = res.body.authors,
-                this.resNum = res.body.num
-            })
             this.$http.post('http://localhost:8080/search_post/', {
                 query:this.newSearch,
                 year: this.timeValue,
                 authors: this.authorValue,
                 conf: n||n==0 ? [this.conferences[n]] : [],
                 index: this.currentPage
-            }).then(res => {
-                console.log(res)
-                console.log(this.newSearch)   
-                console.log(this.timeValue) 
-                console.log(this.authorValue) 
-                console.log(n||n==0 ? [this.conferences[n]] : [])  
-                console.log(this.currentPage)        
-                this.results = res.body;
+            }).then(res => {  
+                this.results = res.body.reslist,
+                this.resNum = res.body.num,
+                this.conferences = res.body.confs,
+                this.times = res.body.years,
+                this.authors = res.body.authors
                 // this.results.sort(this.sortResult('date'))
                 // for(let i = 0;i<this.results.length;i++) {
                 //     this.times.push(this.results[i].date)
@@ -211,19 +188,26 @@ export default {
                 // }
                 // this.conferences = Array.from(new Set(this.conferences))
                 // console.log(this.conferences)
-                // this.conferences.sort()
-                
+                // this.conferences.sort()         
                 this.$router.push({
                     path: '/detail?q='+this.newSearch+''
                 })
             })
-            
+            // this.$http.post('http://localhost:8080/search_info_post/' , {
+            //     query:this.newSearch,
+            //     year: this.timeValue,
+            //     authors: this.authorValue,
+            //     conf: n||n==0 ? [this.conferences[n]] : []
+            // }).then(res => {
+            //     this.conferences = res.body.confs,
+            //     this.times = res.body.years,
+            //     this.authors = res.body.authors
+            // })    
         }
     },
     created () {
         this.search = this.$route.query.q,
-        this.getOriginList(),
-        this.changeTopContent()
+        this.getOriginList()
     }
 }
 </script>
