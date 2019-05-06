@@ -39,10 +39,7 @@ export default {
             };
         },
         loadAll() {
-            return [
-                { "value": "A", "conference": "IUI/2018/Ogata" },
-                { "value": "B", "conference": "CHI/2018/Fekety" }
-            ];
+            return [];
         },
         handleSelect(item) {
             console.log(item);
@@ -66,24 +63,24 @@ export default {
     width: 100%;
     position: absolute;
     left: 0;
-    /* background-color: rgb(0,98,132); */
-    background-color: rgb(248,195,205);
+    top: 0;
+    background-color: rgb(0,98,132);
+    /* background-color: rgb(248,195,205); */
     /* background-color: rgb(181,202,160); */
     /* background-color: rgb(134,166,151); */
     /* background-color: rgb(129,199,212); */
 }
 .title {
-    font-size: 5.5vw;
+    font-size: 90px;
     font-weight: bolder;
     color: rgb(173,35,51);
     margin-top: 15%;
 }
 .inline-input {
     display: block;
-    width:30%;
-    position: absolute;
-    top:45%;
-    left: 35%;
+    width: 430px;
+    height: 100px;
+    margin: 0 auto;
 }
 .el-input__inner {
    font-size: 1.5vw;

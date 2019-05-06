@@ -6,7 +6,7 @@
         </div>
         <div class="search">
             <el-input v-model="newSearch" class="input-with-select" @keyup.enter.native="getNewList()">
-                <el-select v-model="timeValue" multiple placeholder="time" slot="prepend" style="width:150px;" collapse-tags>
+                <el-select v-model="timeValue" multiple placeholder="time" slot="prepend" style="width:80px;" collapse-tags>
                     <el-option
                         v-for="(time,index) in times"
                         :key="index"
@@ -14,7 +14,7 @@
                         :value="time">
                     </el-option>
                 </el-select>
-                <el-select v-model="authorValue" multiple placeholder="author" slot="append" style="width:200px;" collapse-tags>
+                <el-select v-model="authorValue" multiple placeholder="author" slot="append" style="width:150px;" collapse-tags>
                     <el-option
                     v-for="(author,index) in authors"
                     :key="index"
@@ -24,6 +24,7 @@
                 </el-select>
                 <el-button slot="append" icon="el-icon-search" style="margin-left:30px" @click="getNewList()"></el-button>
             </el-input>
+            <span class="results">results:{{total}}</span>
         </div>
     </div>
     <div class="bottom">
@@ -32,14 +33,18 @@
                 <div class="conf-title">
                     <span>conferences</span>
                 </div>
-                <table class="conf-select">
-                    <tbody>
-                        <tr v-for="(n,index) in Math.round(conferences.length/2)" :key="index">
-                            <td @click="getNewList(2*n-2)">{{conferences[2*n-2]}}</td>
-                            <td @click="getNewList(2*n-1)">{{conferences[2*n-1]}}</td>
-                        </tr>
-                    </tbody>
-                </table>               
+                <div>
+                    <div class="conf-subtitle">CCF</div>
+                    <el-checkbox-group v-model="selectConf" @change="getConfList" style="height:250px">
+                        <el-checkbox v-for="(item,index) in ccfconferences" :key="index" :index="index" :label="item._id+':'+item.cnt"></el-checkbox>
+                    </el-checkbox-group>
+                </div>
+                <div>
+                    <div class="conf-subtitle" @click="more()">More</div>
+                    <el-checkbox-group v-model="selectConf" @change="getConfList" v-if="showOtherConf">
+                        <el-checkbox v-for="(item,index) in conferences" :key="index" :index="index" :label="item._id+':'+item.cnt"></el-checkbox>
+                    </el-checkbox-group>
+                </div>
             </div>
             <div class="result">
                 <div v-for="(result,index) in results" :key="index" class="res-item">
@@ -48,31 +53,32 @@
                         <a :href="result.url" class="title-link" target="_blank"><span v-html="result.title"></span></a>
                     </div>
                     <div class="detail-info">
-                        <span>{{result.date}} </span>
-                        <span>{{result.conf}} </span>
+                        <span>{{result.year}} </span>
+                        <span>{{result.shortName}} </span>
                         <a v-for="(author,index) in result.authors" :key="index" :href="author.link" class="author-link" target="_blank">{{author.name}}</a>
                     </div>
-                    <div class="summary" v-if="!result.openFlag" @click="showPieceFunc(result,index)">
+                    <div class="notOpen" v-if="!result.openFlag" @click="showPieceFunc(result,index)">
                         <div>Summary:<span v-html="result.summary"></span></div>
                     </div>
                     <div class="summary-all" v-else @click="showPieceFunc(result,index)">
                         <div>Summary:<span v-html="result.summary"></span></div>
                     </div>
                 </div>
+                <div class="page">
+                    <el-pagination
+                        @current-change="handleCurrentChange"
+                        :current-page.sync="currentPage"
+                        layout="sizes, prev, pager, next"
+                        :page-count="Math.floor(total/10)">
+                    </el-pagination>
+                </div>
             </div>
         </div>  
-        <div class="page">
-            <el-pagination
-                @current-change="handleCurrentChange"
-                :current-page.sync="currentPage"
-                layout="sizes, prev, pager, next"
-                :page-count="Math.floor(resNum/10)">
-            </el-pagination>
-        </div>
+        
+        <div class="footer">
+            <div class="footer-content">Copyright © 2017 清华大学 · 人机交互实验室 </div>
+        </div> 
     </div>
-    <div class="footer">
-        <div class="footer-content">Copyright © 2017 清华大学 · 人机交互实验室 </div>
-    </div> 
 </div>
 </template>
 <script>
@@ -83,29 +89,29 @@ export default {
             search:'',
             input:'',
             newSearch:this.$route.query.q,
-            timeValue:'',
-            authorValue:'',
-            conferenceValue:'',
+            timeValue:[],
+            authorValue:[],
             times: [],
             authors:[],
+            ccfconferences: [],
             conferences:[],
             results: [],
             currentPage: 1,
             pageSize:10,
-            screenWidth:'',
             showPiece: [],
-            resNum:[]
+            // resNum:[],
+            selectConf: [],
+            total: 0,
+            showOtherConf: false
         }
     },
     mounted() {
         
     },
-    watch: {
-        screenWidth (val) {
-            this.screenWidth = val
-        }
-    },
-    methods: {   
+    methods: {  
+       more() {
+            this.showOtherConf = ! this.showOtherConf
+       }, 
        showPieceFunc(result,index) {
             if(!result.openFlag) {
                 Vue.set(result,'openFlag',true)
@@ -114,95 +120,90 @@ export default {
                 Vue.set(result,'openFlag',false)
             }
        },
-       handleCurrentChange(val) {
-           this.currentPage = val;
-           this.$http.post('http://localhost:8080/search_post/', {
+       handleCurrentChange(val) {                     
+           this.$http.post('http://39.105.69.251:8081/search_post/', {
                 query:this.newSearch,
                 year: this.timeValue,
                 authors: this.authorValue,
-                conf: [],
+                conf: this.selectConf,
                 index: val+1
             }).then(res => {
-                this.results = res.body.reslist,
-                this.resNum = res.body.num,
+                this.results = res.body.result.reslist,
+                // this.resNum = res.body.result.num,
+                this.currentPage = val;
                 this.$router.push({
                     path: '/detail?q='+this.newSearch+''
                 })
+            }).catch (err => {
+                console.log(err)
             })
        },
        getOriginList() {
-            this.$http.get(`http://localhost:8080/search_post/?query=${this.search}&index=1`)
-            .then(res => {      
-                this.results = res.body.reslist,
-                this.resNum = res.body.num,
-                this.conferences = res.body.confs,
-                this.times = res.body.years,
-                this.authors = res.body.authors 
+            this.$http.post('http://39.105.69.251:8081/search_post/', {
+                query:this.search,
+                year: [],
+                authors: [],
+                conf: [],
+                index: 1
+            }).then(res => {     
+                console.log(res.body.result.num) 
+                this.results = res.body.result.reslist,
+                // this.resNum = res.body.result.num,
+                this.ccfconferences = res.body.result.ccf_confs,
+                this.conferences = res.body.result.confs,
+                this.times = res.body.result.years,
+                this.authors = res.body.result.authors ,
+                this.total = res.body.result.num
             })
-            // this.$http.get(`http://localhost:8080/search_info_post/?query=${this.search}`)
-            // .then(res => {
-            //     this.conferences = res.body.confs,
-            //     this.times = res.body.years,
-            //     this.authors = res.body.authors              
-            // })
         },
-        sortResult(property){
-            return function(a,b) {
-                var value1 = a[property];
-                var value2 = b[property];
-                return value2-value1
-            }
-        },
-        sortTime(a,b)
-        {
-            return b - a
-        },
-        getNewList(n) {
-            this.$http.post('http://localhost:8080/search_post/', {
+        getNewList() {
+            this.results = [],
+            // this.resNum = [],
+            this.ccfconferences = [],
+            this.conferences = [],
+            this.times = [],
+            this.authors = [],
+            this.total = 0,
+            this.$http.post('http://39.105.69.251:8081/search_post/', {
                 query:this.newSearch,
                 year: this.timeValue,
                 authors: this.authorValue,
-                conf: n||n==0 ? [this.conferences[n]] : [],
+                conf: this.selectConf,
+                index: this.currentPage
+            }).then(res => {
+                this.results = res.body.result.reslist,
+                // this.resNum = res.body.result.num,
+                this.ccfconferences = res.body.result.ccf_confs,
+                this.conferences = res.body.result.confs,
+                this.times = res.body.result.years,
+                this.authors = res.body.result.authors,
+                this.total = res.body.result.num 
+                //this.$router.push({
+                //    path: '/detail?q='+this.newSearch+''
+                //})
+            }) 
+        },
+        getConfList() {
+            setTimeout(() => {
+               this.$http.post('http://39.105.69.251:8081/search_post/', {
+                query:this.newSearch,
+                year: this.timeValue,
+                authors: this.authorValue,
+                conf: this.selectConf,
                 index: this.currentPage
             }).then(res => {  
-                this.results = res.body.reslist,
-                this.resNum = res.body.num,
-                this.conferences = res.body.confs,
-                this.times = res.body.years,
-                this.authors = res.body.authors
-                // this.results.sort(this.sortResult('date'))
-                // for(let i = 0;i<this.results.length;i++) {
-                //     this.times.push(this.results[i].date)
-                // }
-                // this.times = Array.from(new Set(this.times))
-                // this.times.sort(this.sortNumber)
-                // for(let i = 0;i<this.results.length;i++) {
-                //     for(let j=0;j<this.results[i].authors.length;j++) {
-                //         this.authors.push(this.results[i].authors[j])
-                //     }
-                // }
-                // this.authors = Array.from(new Set(this.authors))
-                // this.authors.sort()
-                // for(let i = 0;i<this.results.length;i++) {
-                //     this.conferences.push(this.results[i].conf)
-                // }
-                // this.conferences = Array.from(new Set(this.conferences))
-                // console.log(this.conferences)
-                // this.conferences.sort()         
+                this.results = res.body.result.reslist,
+                // this.resNum = res.body.result.num,
+                this.ccfconferences = res.body.result.ccf_confs,
+                this.conferences = res.body.result.confs,
+                this.times = res.body.result.years,
+                this.authors = res.body.result.authors,
+                this.total = res.body.result.num 
                 this.$router.push({
                     path: '/detail?q='+this.newSearch+''
                 })
-            })
-            // this.$http.post('http://localhost:8080/search_info_post/' , {
-            //     query:this.newSearch,
-            //     year: this.timeValue,
-            //     authors: this.authorValue,
-            //     conf: n||n==0 ? [this.conferences[n]] : []
-            // }).then(res => {
-            //     this.conferences = res.body.confs,
-            //     this.times = res.body.years,
-            //     this.authors = res.body.authors
-            // })    
+            }) 
+            }, 5000);
         }
     },
     created () {
@@ -216,6 +217,7 @@ export default {
 #detail {
     height: 100%;
     width: 100%;
+    overflow: scroll;
     left: 0;
     position: absolute;
     top: 0;
@@ -231,10 +233,10 @@ export default {
 .logo {   
     color: rgb(173,35,51);
     margin: 0 20px 0 0;
-    width:200px;
+    width:240px;
 }
 .logo a {
-    font-size: 50px;
+    font-size: 55px;
     line-height: 100px;
     font-weight: bolder;
     text-decoration: none;
@@ -243,6 +245,10 @@ export default {
 .search {
     flex: 1;
     padding-top: 30px;
+}
+.results {
+     color: rgb(173,35,51);
+     font-size: 13px;
 }
 .input-with-select {
     background-color: #fff;
@@ -272,7 +278,7 @@ export default {
     display: flex; 
 }
 .select-opt {
-    width: 200px;
+    width: 240px;
     background-color: #fff;
     margin-right: 20px;
 }
@@ -282,14 +288,32 @@ export default {
     color: rgb(133,15,31);
     text-align: center;
 }
+.conf-subtitle {
+    color: rgb(133,15,31);
+    font-weight: bold;
+    text-decoration: underline;
+}
+.conf-subtitle:hover {
+    cursor: pointer;
+}
 .conf-title span {
     line-height: 50px; 
     font-size: 20px; 
 }
-td {
+/* td {
     font-size: 12px;
     color: rgb(133,15,31);
     padding-right: 30px;
+    cursor: pointer;
+} */
+.el-checkbox {
+    width: 113px;
+    margin: 0 !important;
+    overflow-x: scroll;
+    float: left;
+    font-size: 13px;
+    color: rgb(133,15,31);
+    padding:10px 0 0 5px;
     cursor: pointer;
 }
 .result {
@@ -300,8 +324,6 @@ td {
     flex:1;
 }
 .page {
-    width:500px;
-    margin: 0 auto;
     padding-top: 30px;
 }
 .res-item {
@@ -311,15 +333,15 @@ td {
     font-size:1.1vw;
     padding-top:10px;
     font-weight:bold;
-    padding: 10px 20px 0 20px;
+    padding: 10px 20px 0 1vw;
 }
 .detail-info {
     font-size: 0.9vw;
     color: rgb(164,164,164);
     padding-top:1px;
-    padding: 0 20px;
+    padding: 0 1vw;
 }
-.summary {
+.notOpen {
     font-size: 1.0vw;
     width:98%;
     margin-bottom: 3px;
@@ -328,15 +350,15 @@ td {
     display:-webkit-box;    
     -webkit-box-orient:vertical;
     -webkit-line-clamp:3;
-    padding: 0 20px;
+    padding: 0 1vw;
 }
 .summary-all {
     font-size: 1.0vw;
     width:98%;
     margin-bottom: 3px;
-    padding: 0 20px;
+    padding: 0 1vw;
 }
-.summary div {
+.notOpen div {
     padding-right: 20px;
 }
 .summary-all div {
