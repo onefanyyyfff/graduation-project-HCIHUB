@@ -5,15 +5,16 @@ import App from './App.vue'
 import router from './router'
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
+import 'lib-flexible/flexible'
 Vue.config.productionTip = false
 import VueResource from 'vue-resource'
 Vue.use(VueResource)
 Vue.use(ElementUI)
-/* eslint-disable no-new */
+    /* eslint-disable no-new */
 new Vue({
-  el: '#app',
-  router,
-  components: { App },
-  template: '<App/>',
-  render:h=>h(App)
+    el: '#app',
+    router,
+    components: { App },
+    template: '<App/>',
+    render: h => h(App)
 })

@@ -1,7 +1,7 @@
 <template>
 <div id="home">
     <div class="title">HCIHUB</div>
-    <el-autocomplete
+    <!-- <el-autocomplete
       class="inline-input"
       v-model="state"
       :fetch-suggestions="querySearch"
@@ -12,7 +12,14 @@
         <span class="conference">{{ item.conference }}</span>
       </template>
       <el-button slot="append" icon="el-icon-search" @click="toDetail()"></el-button>
-    </el-autocomplete>
+    </el-autocomplete> -->
+    <div class="search-box">
+        <input class="inline-input"
+           v-model="state"
+           @keyup.enter="toDetail()">
+        <img src="../../static/search.png" @click="toDetail()">
+    </div>
+    
 </div>
 </template>
 <script>
@@ -64,36 +71,56 @@ export default {
     position: absolute;
     left: 0;
     top: 0;
-    background-color: rgb(0,98,132);
+    /* background-color: rgb(0,98,132); */
     /* background-color: rgb(248,195,205); */
     /* background-color: rgb(181,202,160); */
     /* background-color: rgb(134,166,151); */
     /* background-color: rgb(129,199,212); */
 }
 .title {
-    font-size: 90px;
+    font-size: 150px;
     font-weight: bolder;
-    color: rgb(173,35,51);
+    color: #000;
     margin-top: 15%;
 }
-.inline-input {
+.search-box {
+    display: flex;
+    width: 600px;
+    height: 58px;
+    padding:4px;
+    margin: 0 auto;
+    border: 1px solid #ccc;
+}
+.search-box input {
+    width: 550px;
+    height: 50px;
+    outline: none;
+    border: none;
+    font-size: 25px;
+}
+.search-box img {
+    width: 50px;
+    height: 50px;
+}
+/* .inline-input {
     display: block;
-    width: 430px;
-    height: 100px;
+    width: 630px;
     margin: 0 auto;
 }
+.el-input {
+    height: 60px!important;
+}
 .el-input__inner {
-   font-size: 1.5vw;
-}
-.el-input input {
-    height:60px;
-}
-.key-word {
+   font-size: 20px;
+   height: 60px!important;
+} */
+/* .key-word {
     text-overflow: ellipsis;
     overflow: hidden;
 }
 .conference {
     font-size: 12px;
     color: #b4b4b4;
-}
+} */
+
 </style>

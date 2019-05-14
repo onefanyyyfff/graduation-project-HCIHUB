@@ -1,12 +1,13 @@
 <template>
-<div id="detail">
-    <div class="top-content">
-        <div class="logo">
-            <a href="/">HCIHUB</a>
-        </div>
-        <div class="search">
-            <el-input v-model="newSearch" class="input-with-select" @keyup.enter.native="getNewList()">
-                <el-select v-model="timeValue" multiple placeholder="time" slot="prepend" style="width:80px;" collapse-tags>
+<div id="detail" v-loading="loading">
+    <div class="top">
+        <div class="top-content">
+            <div class="logo" ref="logo">
+                <a href="/">HCIHUB</a>
+            </div>
+            <div class="search">
+                <!-- <el-input v-model="search" class="input-with-select" @keyup.enter.native="getNewList()"> -->
+                <el-select v-model="timeValue" multiple placeholder="time" slot="prepend" style="width:120px;border:none" collapse-tags>
                     <el-option
                         v-for="(time,index) in times"
                         :key="index"
@@ -14,27 +15,25 @@
                         :value="time">
                     </el-option>
                 </el-select>
-                <el-select v-model="authorValue" multiple placeholder="author" slot="append" style="width:150px;" collapse-tags>
-                    <el-option
-                    v-for="(author,index) in authors"
-                    :key="index"
-                    :label="author"
-                    :value="author">
-                    </el-option>
-                </el-select>
-                <el-button slot="append" icon="el-icon-search" style="margin-left:30px" @click="getNewList()"></el-button>
-            </el-input>
-            <span class="results">results:{{total}}</span>
+                <input v-model="search" class="input-with-select" @keyup.enter.native="getNewList()">
+                <img src="../../static/search.png">
+                    <!-- <el-button slot="append" icon="el-icon-search"  @click="getNewList()"></el-button> -->
+                <!-- </el-input> -->
+            </div>
         </div>
+    </div>
+    <div class="sort-box">
+        <span class="results">results:{{total}}</span>
+        <span :class="{selectedType:sort===1,sortType:sort!==1}" @click="getNewSort(1)">RELAVANCE</span>
+        <span :class="{selectedType:sort===2,sortType:sort!==2}" @click="getNewSort(2)">TIME</span>
     </div>
     <div class="bottom">
         <div class="bottom-content">
             <div class="select-opt">
                 <div class="conf-title">
-                    <span>conferences</span>
+                    <span>SOURCES</span>
                 </div>
                 <div>
-                    <div class="conf-subtitle">CCF</div>
                     <el-checkbox-group v-model="selectConf" @change="getConfList" style="height:250px">
                         <el-checkbox v-for="(item,index) in ccfconferences" :key="index" :index="index" :label="item._id+':'+item.cnt"></el-checkbox>
                     </el-checkbox-group>
@@ -49,7 +48,7 @@
             <div class="result">
                 <div v-for="(result,index) in results" :key="index" class="res-item">
                     <div class="title">
-                        <a :href="result.url" class="title-link" target="_blank">{{(currentPage-1)*pageSize+index+1}}.</a>
+                        <a :href="result.url" class="title-link" target="_blank">{{pageNum+index}}.</a>
                         <a :href="result.url" class="title-link" target="_blank"><span v-html="result.title"></span></a>
                     </div>
                     <div class="detail-info">
@@ -68,8 +67,8 @@
                     <el-pagination
                         @current-change="handleCurrentChange"
                         :current-page.sync="currentPage"
-                        layout="sizes, prev, pager, next"
-                        :page-count="Math.floor(total/10)">
+                        layout="prev, pager, next"
+                        :page-count="Math.ceil(total/10)">
                     </el-pagination>
                 </div>
             </div>
@@ -86,9 +85,7 @@ import Vue from 'vue'
 export default {
     data () {
         return {
-            search:'',
-            input:'',
-            newSearch:this.$route.query.q,
+            search:this.$route.query.q,
             timeValue:[],
             authorValue:[],
             times: [],
@@ -99,19 +96,32 @@ export default {
             currentPage: 1,
             pageSize:10,
             showPiece: [],
-            // resNum:[],
             selectConf: [],
             total: 0,
-            showOtherConf: false
+            showOtherConf: false,
+            loading: true,
+            pageNum: 1,
+            sort: 1,
+            screenWidth: document.body.clientWidth
         }
     },
-    mounted() {
-        
+    mounted () {
+        if(this.screenWidth <500) {
+            this.$refs.logo.hidden = true
+        }
     },
     methods: {  
        more() {
             this.showOtherConf = ! this.showOtherConf
        }, 
+       clear() {
+           this.results = [],
+            this.ccfconferences = [],
+            this.conferences = [],
+            this.times = [],
+            this.authors = [],
+            this.total = 0
+       },
        showPieceFunc(result,index) {
             if(!result.openFlag) {
                 Vue.set(result,'openFlag',true)
@@ -120,22 +130,21 @@ export default {
                 Vue.set(result,'openFlag',false)
             }
        },
-       handleCurrentChange(val) {                     
+       handleCurrentChange(val) {   
+           this.loading = true               
            this.$http.post('http://39.105.69.251:8081/search_post/', {
-                query:this.newSearch,
+                query:this.search,
                 year: this.timeValue,
                 authors: this.authorValue,
                 conf: this.selectConf,
-                index: val+1
+                index: val,
+                sort: this.sort
             }).then(res => {
+                this.loading = false
                 this.results = res.body.result.reslist,
-                // this.resNum = res.body.result.num,
                 this.currentPage = val;
-                this.$router.push({
-                    path: '/detail?q='+this.newSearch+''
-                })
-            }).catch (err => {
-                console.log(err)
+                this.pageNum = (this.currentPage-1)*this.pageSize+1;
+                window.scrollTo(0,0)
             })
        },
        getOriginList() {
@@ -144,11 +153,13 @@ export default {
                 year: [],
                 authors: [],
                 conf: [],
-                index: 1
-            }).then(res => {     
-                console.log(res.body.result.num) 
+                index: 1,
+                sort: this.sort
+            }).then(res => { 
+                this.loading = false,
+                this.currentPage = 1,  
+                this.pageNum = 1,
                 this.results = res.body.result.reslist,
-                // this.resNum = res.body.result.num,
                 this.ccfconferences = res.body.result.ccf_confs,
                 this.conferences = res.body.result.confs,
                 this.times = res.body.result.years,
@@ -156,102 +167,141 @@ export default {
                 this.total = res.body.result.num
             })
         },
-        getNewList() {
-            this.results = [],
-            // this.resNum = [],
-            this.ccfconferences = [],
-            this.conferences = [],
-            this.times = [],
-            this.authors = [],
-            this.total = 0,
+        getNewSort(sort) {
+            this.loading = true 
             this.$http.post('http://39.105.69.251:8081/search_post/', {
-                query:this.newSearch,
+                query:this.search,
                 year: this.timeValue,
                 authors: this.authorValue,
                 conf: this.selectConf,
-                index: this.currentPage
-            }).then(res => {
+                index: 1,
+                sort: sort
+            }).then(res => { 
+                this.loading = false,
+                this.currentPage = 1,  
+                this.pageNum = 1;
                 this.results = res.body.result.reslist,
-                // this.resNum = res.body.result.num,
+                this.sort = sort
+            })
+        },
+        getNewList() {
+            this.loading = true  
+            this.clear()
+            this.$http.post('http://39.105.69.251:8081/search_post/', {
+                query:this.search,
+                year: this.timeValue,
+                authors: this.authorValue,
+                conf: [],
+                index: 1,
+                sort: this.sort
+            }).then(res => {
+                this.loading = false,
+                this.currentPage = 1,  
+                this.pageNum = 1;
+                this.results = res.body.result.reslist,
                 this.ccfconferences = res.body.result.ccf_confs,
                 this.conferences = res.body.result.confs,
                 this.times = res.body.result.years,
                 this.authors = res.body.result.authors,
-                this.total = res.body.result.num 
-                //this.$router.push({
-                //    path: '/detail?q='+this.newSearch+''
-                //})
+                this.total = res.body.result.num,
+                this.$router.push({
+                    path: '/detail?q='+this.search+''
+                })
             }) 
         },
         getConfList() {
-            setTimeout(() => {
+               this.loading = true  
                this.$http.post('http://39.105.69.251:8081/search_post/', {
-                query:this.newSearch,
+                query:this.search,
                 year: this.timeValue,
                 authors: this.authorValue,
                 conf: this.selectConf,
-                index: this.currentPage
+                index: 1,
+                sort: this.sort
             }).then(res => {  
+                this.loading = false,
+                this.currentPage = 1,  
+                this.pageNum = 1, 
                 this.results = res.body.result.reslist,
-                // this.resNum = res.body.result.num,
-                this.ccfconferences = res.body.result.ccf_confs,
-                this.conferences = res.body.result.confs,
                 this.times = res.body.result.years,
                 this.authors = res.body.result.authors,
                 this.total = res.body.result.num 
-                this.$router.push({
-                    path: '/detail?q='+this.newSearch+''
-                })
+                
             }) 
-            }, 5000);
         }
     },
     created () {
-        this.search = this.$route.query.q,
         this.getOriginList()
     }
 }
 </script>
 
-<style scoped> 
+<style> 
 #detail {
-    height: 100%;
     width: 100%;
     overflow: scroll;
     left: 0;
     position: absolute;
     top: 0;
     text-align: left;
+    color: #000;
+}
+.top {
+    border-bottom: 1px solid #ccc;
 }
 .top-content {
-    height: 100px;
-    width: 73%;
+    height: 130px;
     margin: 0 auto;
     display: flex;
-    background-color: #fff;
+    width: 90%;
 }
 .logo {   
-    color: rgb(173,35,51);
     margin: 0 20px 0 0;
-    width:240px;
+    width:330px;
 }
 .logo a {
-    font-size: 55px;
-    line-height: 100px;
+    font-size: 48px;
+    line-height: 130px;
     font-weight: bolder;
     text-decoration: none;
-    color: rgb(173,35,51);
+    color: #000;
 }
 .search {
-    flex: 1;
-    padding-top: 30px;
+    /* flex: 1; */
+    /* padding-top: 35px; */
+    display: flex;
+}
+.sort-box {
+    margin: 10px 0 0 0;
+}
+.sort-box .sortType,.selectedType:hover {
+    cursor: pointer;
 }
 .results {
      color: rgb(173,35,51);
      font-size: 13px;
+     padding-top: 4px;
+}
+.sortType {
+    border: 1px solid #ccc;
+    color: #ccc;
+    border-radius: 5px;
+    padding: 2px;
+    margin: 0 2px;
+}
+.selectedType {
+    border: 1px solid #ccc;
+    background: #ccc;
+    border-radius: 5px;
+    padding: 2px;
+    color: white;
+    margin: 0 2px;
 }
 .input-with-select {
     background-color: #fff;
+}
+.el-input-group--append .el-input__inner, .el-input-group__prepend {
+    height: 49px;
 }
 .el-input-group__prepend {
     background-color: #fff;
@@ -268,22 +318,21 @@ export default {
 
 
 .bottom {
-    background-color: rgb(246,246,246);
     padding: 0 0 20px 0;
     min-width: 700px;
 }
 .bottom-content {
-    width: 73%;
+    width: 90%;
     margin: 0 auto;
     display: flex; 
 }
 .select-opt {
-    width: 240px;
+    width: 330px;
     background-color: #fff;
     margin-right: 20px;
 }
 .conf-title {
-    height: 50px;
+    height: 70px;
     background-color: rgba(181,73,91,0.2);
     color: rgb(133,15,31);
     text-align: center;
@@ -297,54 +346,58 @@ export default {
     cursor: pointer;
 }
 .conf-title span {
-    line-height: 50px; 
-    font-size: 20px; 
+    line-height: 70px; 
+    font-size: 30px; 
 }
-/* td {
-    font-size: 12px;
-    color: rgb(133,15,31);
-    padding-right: 30px;
-    cursor: pointer;
-} */
 .el-checkbox {
-    width: 113px;
+    width: 160px;
     margin: 0 !important;
     overflow-x: scroll;
+    overflow-y: hidden;
     float: left;
-    font-size: 13px;
-    color: rgb(133,15,31);
-    padding:10px 0 0 5px;
+    color: rgb(133,15,31)!important;
+    padding:10px 0 10px 5px;
     cursor: pointer;
+}
+.el-checkbox__label {
+    font-size: 20px!important;
+    color: rgb(133,15,31)!important;
 }
 .result {
     background-color: #fff;
-    width: 60%;
+    /* width: 60%; */
     margin: 0 auto;
     padding: 5px 0 5px 0;
     flex:1;
 }
 .page {
     padding-top: 30px;
+    margin: 0 auto;
+    width: 400px;
 }
 .res-item {
+    padding: 0 0 6px 0;
     border-bottom: 1px solid #ccc;
 }
 .title {
-    font-size:1.1vw;
+    /* font-size:1.1vw; */
+    font-size:22px;
     padding-top:10px;
     font-weight:bold;
     padding: 10px 20px 0 1vw;
 }
 .detail-info {
-    font-size: 0.9vw;
+    /* font-size: 0.9vw; */
+    font-size: 18px;
     color: rgb(164,164,164);
-    padding-top:1px;
+    padding-top:2px;
     padding: 0 1vw;
 }
 .notOpen {
-    font-size: 1.0vw;
+    /* font-size: 1.0vw; */
+    font-size:16px;
     width:98%;
-    margin-bottom: 3px;
+    margin-bottom: 4px;
     overflow:hidden; 
     text-overflow:ellipsis;
     display:-webkit-box;    
@@ -353,9 +406,10 @@ export default {
     padding: 0 1vw;
 }
 .summary-all {
-    font-size: 1.0vw;
+    /* font-size: 1.0vw; */
+    font-size:16px;
     width:98%;
-    margin-bottom: 3px;
+    margin-bottom: 4px;
     padding: 0 1vw;
 }
 .notOpen div {
@@ -378,11 +432,12 @@ export default {
     color: #2c3e50;
 }
 .footer {
-    padding:10px;
-    font-size: 0.9vw;
+    padding:30px 0 0 0;
+    /* font-size: 0.9vw; */
+    font-size: 14px;
 }
 .footer-content {
-    width:280px;
+    width:400px;
     margin: 0 auto;
 }
 </style>
