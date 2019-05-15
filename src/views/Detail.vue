@@ -3,10 +3,9 @@
     <div class="top">
         <div class="top-content">
             <div class="logo" ref="logo">
-                <a href="/">HCIHUB</a>
+                <a href="/"><span style="color:#4AA5E5">HCI</span><span style="color:#FCB75F">HUB</span></a>
             </div>
             <div class="search">
-                <!-- <el-input v-model="search" class="input-with-select" @keyup.enter.native="getNewList()"> -->
                 <el-select v-model="timeValue" multiple placeholder="time" slot="prepend" style="width:120px;border:none" collapse-tags>
                     <el-option
                         v-for="(time,index) in times"
@@ -15,27 +14,30 @@
                         :value="time">
                     </el-option>
                 </el-select>
-                <input v-model="search" class="input-with-select" @keyup.enter.native="getNewList()">
-                <img src="../../static/search.png">
-                    <!-- <el-button slot="append" icon="el-icon-search"  @click="getNewList()"></el-button> -->
-                <!-- </el-input> -->
+                <input v-model="search" class="input-with-select" @keyup.enter="getNewList()">
+                <img src="../../static/search.png" @click="getNewList()">
             </div>
         </div>
     </div>
     <div class="sort-box">
-        <span class="results">results:{{total}}</span>
-        <span :class="{selectedType:sort===1,sortType:sort!==1}" @click="getNewSort(1)">RELAVANCE</span>
-        <span :class="{selectedType:sort===2,sortType:sort!==2}" @click="getNewSort(2)">TIME</span>
+        <div class="results">results:{{total}}</div>
+        <div :class="{selectedType:sort===1,sortType:sort!==1}" @click="getNewSort(1)">RELAVANCE</div>
+        <div :class="{selectedType:sort===2,sortType:sort!==2}" @click="getNewSort(2)">TIME</div>
     </div>
     <div class="bottom">
         <div class="bottom-content">
             <div class="select-opt">
                 <div class="conf-title">
-                    <span>SOURCES</span>
+                    <span>Source</span>
                 </div>
                 <div>
                     <el-checkbox-group v-model="selectConf" @change="getConfList" style="height:250px">
-                        <el-checkbox v-for="(item,index) in ccfconferences" :key="index" :index="index" :label="item._id+':'+item.cnt"></el-checkbox>
+                        <el-checkbox v-for="(item,index) in ccfconferences" :key="index" :index="index" :label="item._id+':'+item.cnt" >
+                            <div class="check-label">
+                                <div>{{item._id}}</div>
+                                <div class="check-num">{{item.cnt}}</div>
+                            </div>                 
+                        </el-checkbox>
                     </el-checkbox-group>
                 </div>
                 <div>
@@ -57,10 +59,10 @@
                         <a v-for="(author,index) in result.authors" :key="index" :href="author.link" class="author-link" target="_blank">{{author.name}}</a>
                     </div>
                     <div class="notOpen" v-if="!result.openFlag" @click="showPieceFunc(result,index)">
-                        <div>Summary:<span v-html="result.summary"></span></div>
+                        <div>Summary:<div v-html="result.summary"></div></div>
                     </div>
                     <div class="summary-all" v-else @click="showPieceFunc(result,index)">
-                        <div>Summary:<span v-html="result.summary"></span></div>
+                        <div>Summary:<div v-html="result.summary"></div></div>
                     </div>
                 </div>
                 <div class="page">
@@ -250,60 +252,80 @@ export default {
     border-bottom: 1px solid #ccc;
 }
 .top-content {
-    height: 130px;
+    height: 124px;
     margin: 0 auto;
     display: flex;
     width: 90%;
 }
 .logo {   
-    margin: 0 20px 0 0;
+    margin: 0 40px 0 0;
     width:330px;
 }
 .logo a {
-    font-size: 48px;
-    line-height: 130px;
+    font-size: 58px;
+    line-height: 124px;
     font-weight: bolder;
     text-decoration: none;
     color: #000;
 }
 .search {
     /* flex: 1; */
-    /* padding-top: 35px; */
+    margin-top: 33px;
     display: flex;
+    height: 50px;
+    width: 690px;
+    padding:4px;
+    border: 1px solid #D8D8D8;
+    border-radius: 13px;
+}
+.search input {
+    width: 520px;
+    height: 49px;
+    outline: none;
+    border: none;
+    font-size: 25px;
+    z-index: 999;
+}
+.search img {
+    width: 36px;
+    height: 36px;
+    padding: 7px 0;
 }
 .sort-box {
-    margin: 10px 0 0 0;
+    width: 90%;
+    margin: 0 auto;
+    padding: 24px 0;
+    display: flex;
 }
 .sort-box .sortType,.selectedType:hover {
     cursor: pointer;
 }
 .results {
-     color: rgb(173,35,51);
-     font-size: 13px;
+     color: #000;
+     font-size: 15px;
      padding-top: 4px;
+     width: 330px;
+     margin: 0 40px 0 0 
 }
 .sortType {
-    border: 1px solid #ccc;
-    color: #ccc;
+    border: 1px solid #BABABA;
+    color: #BABABA;
     border-radius: 5px;
-    padding: 2px;
-    margin: 0 2px;
+    padding: 0 12px;
+    margin: 0 24px 0 0;
+    height:31px;
+    line-height: 31px;
 }
 .selectedType {
-    border: 1px solid #ccc;
-    background: #ccc;
+    border: 1px solid #4AA5E5;
     border-radius: 5px;
-    padding: 2px;
-    color: white;
-    margin: 0 2px;
+    padding: 0 12px;
+    color: #4AA5E5;
+    margin: 0 24px 0 0;
+    height: 31px;
+    line-height: 31px;
 }
 .input-with-select {
-    background-color: #fff;
-}
-.el-input-group--append .el-input__inner, .el-input-group__prepend {
-    height: 49px;
-}
-.el-input-group__prepend {
     background-color: #fff;
 }
 .el-input-group__append {
@@ -319,7 +341,7 @@ export default {
 
 .bottom {
     padding: 0 0 20px 0;
-    min-width: 700px;
+    /* min-width: 700px; */
 }
 .bottom-content {
     width: 90%;
@@ -330,15 +352,15 @@ export default {
     width: 330px;
     background-color: #fff;
     margin-right: 20px;
+    
 }
 .conf-title {
     height: 70px;
-    background-color: rgba(181,73,91,0.2);
-    color: rgb(133,15,31);
-    text-align: center;
+    color: #000;
+    text-align: left;
+    border-top: 1px solid #BABABA;   
 }
 .conf-subtitle {
-    color: rgb(133,15,31);
     font-weight: bold;
     text-decoration: underline;
 }
@@ -347,21 +369,22 @@ export default {
 }
 .conf-title span {
     line-height: 70px; 
-    font-size: 30px; 
+    font-size: 28px; 
+    font-weight: bold;
 }
 .el-checkbox {
-    width: 160px;
+    width: 330px;
     margin: 0 !important;
-    overflow-x: scroll;
-    overflow-y: hidden;
+    /* overflow-x: scroll;
+    overflow-y: hidden; */
     float: left;
-    color: rgb(133,15,31)!important;
+    /* color: rgb(133,15,31)!important; */
     padding:10px 0 10px 5px;
     cursor: pointer;
 }
 .el-checkbox__label {
     font-size: 20px!important;
-    color: rgb(133,15,31)!important;
+    /* color: rgb(133,15,31)!important; */
 }
 .result {
     background-color: #fff;
@@ -376,26 +399,25 @@ export default {
     width: 400px;
 }
 .res-item {
-    padding: 0 0 6px 0;
-    border-bottom: 1px solid #ccc;
+    padding: 0 0 50px 0;
 }
 .title {
     /* font-size:1.1vw; */
     font-size:22px;
     padding-top:10px;
     font-weight:bold;
-    padding: 10px 20px 0 1vw;
+    padding: 10px 20px 8px 1vw;
 }
 .detail-info {
     /* font-size: 0.9vw; */
-    font-size: 18px;
-    color: rgb(164,164,164);
+    font-size: 14px;
+    color: #A5A5A5;
     padding-top:2px;
     padding: 0 1vw;
 }
 .notOpen {
     /* font-size: 1.0vw; */
-    font-size:16px;
+    font-size:19px;
     width:98%;
     margin-bottom: 4px;
     overflow:hidden; 
@@ -403,14 +425,17 @@ export default {
     display:-webkit-box;    
     -webkit-box-orient:vertical;
     -webkit-line-clamp:3;
-    padding: 0 1vw;
+    padding: 8px 1vw 0 1vw;
+    text-align:justify
 }
 .summary-all {
     /* font-size: 1.0vw; */
-    font-size:16px;
+    font-size:19px;
     width:98%;
     margin-bottom: 4px;
     padding: 0 1vw;
+    text-align:justify;
+    padding: 8px 1vw 0 1vw;
 }
 .notOpen div {
     padding-right: 20px;
@@ -420,16 +445,16 @@ export default {
 }
 .title-link {
     text-decoration: none;
-    color: #2c3e50;
+    color: #000;
 }
 .author-link {
-    color: rgb(164,164,164);
+    color: #A5A5A5;
     padding-right: 8px;
-    font-style:italic;
+    text-decoration: none;
 }
 .summary-link {
     text-decoration: none;
-    color: #2c3e50;
+    color: #000;
 }
 .footer {
     padding:30px 0 0 0;
@@ -439,5 +464,60 @@ export default {
 .footer-content {
     width:400px;
     margin: 0 auto;
+}
+
+
+
+.el-checkbox__inner {
+    border-radius: 0;
+    border: none!important;
+    /* background-color:#A8A8A8; */
+  }
+.el-checkbox {
+    color: #000;
+  }
+.el-checkbox:hover {
+    background: #F4F4F4;
+    border-radius: 5px;
+}
+.el-checkbox__input.is-checked + .el-checkbox__label {
+    color: #000!important;
+    font-weight: bold;
+  }
+.el-checkbox__input.is-checked .el-checkbox__inner {
+    background-color: #FCB75F!important;
+    border-color: #FCB75F!important;
+    border-radius: 7.5px!important;
+    width: 15px!important;
+    height: 15px!important;
+  }
+ .el-checkbox__input.is-checked .el-checkbox__inner::after {
+  border: 2px solid #FCB75F;
+  -webkit-box-sizing: content-box;
+  box-sizing: content-box;
+  content: "";
+  border-left: 0;
+  border-top: 0;
+  height: 7px;
+  left: 4px;
+  position: absolute;
+  top: 1px;
+  width: 3px;
+  -webkit-transform: rotate(45deg) scaleY(1);
+  transform: rotate(45deg) scaleY(1);
+}
+.check-label {
+    display: flex;
+    justify-content: space-between;
+    width: 250px;
+}
+.check-num {
+    color: #A7A7A7;
+}
+.el-checkbox__input.is-checked + .el-checkbox__label .check-num {
+    color: #000;
+}
+.el-checkbox__label {
+    display: inline-block
 }
 </style>

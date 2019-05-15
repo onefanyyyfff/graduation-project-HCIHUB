@@ -18,7 +18,7 @@ export default {
 <style>
 #app {
   /* font-family: PingFangSC-Regular, Microsoft Yahei, HeitiSC, Helvetica; */
-  font-family: HYQihei;
+  font-family: Helvetica Neue;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;

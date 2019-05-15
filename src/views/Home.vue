@@ -1,6 +1,6 @@
 <template>
 <div id="home">
-    <div class="title">HCIHUB</div>
+    <div class="title"><span style="color:#4AA5E5">HCI</span><span style="color:#FCB75F">HUB</span></div>
     <!-- <el-autocomplete
       class="inline-input"
       v-model="state"
@@ -71,11 +71,6 @@ export default {
     position: absolute;
     left: 0;
     top: 0;
-    /* background-color: rgb(0,98,132); */
-    /* background-color: rgb(248,195,205); */
-    /* background-color: rgb(181,202,160); */
-    /* background-color: rgb(134,166,151); */
-    /* background-color: rgb(129,199,212); */
 }
 .title {
     font-size: 150px;
