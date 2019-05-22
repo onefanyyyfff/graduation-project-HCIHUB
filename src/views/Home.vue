@@ -1,18 +1,6 @@
 <template>
 <div id="home">
     <div class="title"><span style="color:#4AA5E5">HCI</span><span style="color:#FCB75F">HUB</span></div>
-    <!-- <el-autocomplete
-      class="inline-input"
-      v-model="state"
-      :fetch-suggestions="querySearch"
-      @select="toDetail()"
-      @keyup.enter.native="toDetail()">
-      <template slot-scope="{ item }">
-        <div class="key-word">{{ item.value }}</div>
-        <span class="conference">{{ item.conference }}</span>
-      </template>
-      <el-button slot="append" icon="el-icon-search" @click="toDetail()"></el-button>
-    </el-autocomplete> -->
     <div class="search-box">
         <input class="inline-input"
            v-model="state"
@@ -73,29 +61,32 @@ export default {
     top: 0;
 }
 .title {
-    font-size: 150px;
+    font-size: 110px;
     font-weight: bolder;
     color: #000;
     margin-top: 15%;
+    letter-spacing:10px;
 }
 .search-box {
     display: flex;
-    width: 600px;
-    height: 58px;
-    padding:4px;
-    margin: 0 auto;
-    border: 1px solid #ccc;
+    width: 650px;
+    height: 50px;
+    padding:7px 10px;
+    margin: 20px auto 0 auto;
+    border: 1px solid #D8D8D8;
+    border-radius: 20px;
 }
 .search-box input {
-    width: 550px;
+    width: 600px;
     height: 50px;
     outline: none;
     border: none;
     font-size: 25px;
 }
 .search-box img {
-    width: 50px;
-    height: 50px;
+    width: 36px;
+    height: 36px;
+    padding: 7px 0;
 }
 /* .inline-input {
     display: block;

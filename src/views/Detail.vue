@@ -3,7 +3,7 @@
     <div class="top">
         <div class="top-content">
             <div class="logo" ref="logo">
-                <a href="/"><span style="color:#4AA5E5">HCI</span><span style="color:#FCB75F">HUB</span></a>
+                <a href="/">HC<span style="color:#F4B355">I</span>HUB</a>
             </div>
             <div class="search">
                 <el-select v-model="timeValue" multiple placeholder="time" slot="prepend" style="width:120px;border:none" collapse-tags>
@@ -21,8 +21,10 @@
     </div>
     <div class="sort-box">
         <div class="results">results:{{total}}</div>
-        <div :class="{selectedType:sort===1,sortType:sort!==1}" @click="getNewSort(1)">RELAVANCE</div>
-        <div :class="{selectedType:sort===2,sortType:sort!==2}" @click="getNewSort(2)">TIME</div>
+        <div class="sortTabBox">
+            <div :class="{selectedType:sort===1,sortType:sort!==1}" @click="getNewSort(1)">RELAVANCE</div>
+            <div :class="{selectedType:sort===2,sortType:sort!==2}" @click="getNewSort(2)">TIME</div>
+        </div>    
     </div>
     <div class="bottom">
         <div class="bottom-content">
@@ -32,7 +34,7 @@
                 </div>
                 <div>
                     <el-checkbox-group v-model="selectConf" @change="getConfList" style="height:250px">
-                        <el-checkbox v-for="(item,index) in ccfconferences" :key="index" :index="index" :label="item._id+':'+item.cnt" >
+                        <el-checkbox v-for="(item,index) in ccfconferences" :key="index" :index="index" :label="item._id+':'+item.cnt">
                             <div class="check-label">
                                 <div>{{item._id}}</div>
                                 <div class="check-num">{{item.cnt}}</div>
@@ -40,17 +42,22 @@
                         </el-checkbox>
                     </el-checkbox-group>
                 </div>
-                <div>
+                <div style="border-bottom: 1px solid #BABABA;">
                     <div class="conf-subtitle" @click="more()">More</div>
-                    <el-checkbox-group v-model="selectConf" @change="getConfList" v-if="showOtherConf">
-                        <el-checkbox v-for="(item,index) in conferences" :key="index" :index="index" :label="item._id+':'+item.cnt"></el-checkbox>
+                    <el-checkbox-group v-model="selectConf" @change="getConfList" v-if="showOtherConf" style="height: 655px; overflow:scroll">
+                        <el-checkbox v-for="(item,index) in conferences" :key="index" :index="index" :label="item._id+':'+item.cnt">
+                            <div class="check-label">
+                                <div>{{item._id}}</div>
+                                <div class="check-num">{{item.cnt}}</div>
+                            </div>    
+                        </el-checkbox>
                     </el-checkbox-group>
                 </div>
             </div>
             <div class="result">
                 <div v-for="(result,index) in results" :key="index" class="res-item">
                     <div class="title">
-                        <a :href="result.url" class="title-link" target="_blank">{{pageNum+index}}.</a>
+                        <a :href="result.url" class="title-link" target="_blank">[{{pageNum+index}}]  </a>
                         <a :href="result.url" class="title-link" target="_blank"><span v-html="result.title"></span></a>
                     </div>
                     <div class="detail-info">
@@ -77,7 +84,7 @@
         </div>  
         
         <div class="footer">
-            <div class="footer-content">Copyright © 2017 清华大学 · 人机交互实验室 </div>
+            <div class="footer-content">Copyright © 2019 清华大学 · 人机交互实验室 </div>
         </div> 
     </div>
 </div>
@@ -258,7 +265,7 @@ export default {
     width: 90%;
 }
 .logo {   
-    margin: 0 40px 0 0;
+    margin: 0 60px 0 0;
     width:330px;
 }
 .logo a {
@@ -289,7 +296,7 @@ export default {
 .search img {
     width: 36px;
     height: 36px;
-    padding: 7px 0;
+    padding: 7px;
 }
 .sort-box {
     width: 90%;
@@ -305,25 +312,34 @@ export default {
      font-size: 15px;
      padding-top: 4px;
      width: 330px;
-     margin: 0 40px 0 0 
+     margin: 0 60px 0 0 
+}
+.sortTabBox {
+    display:flex;
+    background: #EFEFEF;
+    height: 26px;
+    width: 230px;
+    padding: 5px 12px 12px 12px;
+    border-radius: 10px;
 }
 .sortType {
-    border: 1px solid #BABABA;
-    color: #BABABA;
-    border-radius: 5px;
+    /* border: 1px solid #BABABA; */
+    color: #8A8A8A;
+    border-radius: 8px;
     padding: 0 12px;
-    margin: 0 24px 0 0;
-    height:31px;
-    line-height: 31px;
+    margin: 0 26px 0 0;
+    height:32px;
+    line-height: 33px;
 }
 .selectedType {
-    border: 1px solid #4AA5E5;
-    border-radius: 5px;
+    /* border: 1px solid #4AA5E5; */
+    background: #fff;
+    border-radius: 8px;
     padding: 0 12px;
-    color: #4AA5E5;
+    color: #000;
     margin: 0 24px 0 0;
-    height: 31px;
-    line-height: 31px;
+    height: 32px;
+    line-height: 33px;
 }
 .input-with-select {
     background-color: #fff;
@@ -345,13 +361,14 @@ export default {
 }
 .bottom-content {
     width: 90%;
+    max-width: 2000px;
     margin: 0 auto;
     display: flex; 
 }
 .select-opt {
     width: 330px;
     background-color: #fff;
-    margin-right: 20px;
+    margin-right: 40px;
     
 }
 .conf-title {
@@ -361,8 +378,11 @@ export default {
     border-top: 1px solid #BABABA;   
 }
 .conf-subtitle {
-    font-weight: bold;
-    text-decoration: underline;
+    font-size: 20px;
+    font-weight: 300;
+    position: relative;
+    top: 30px;
+    margin: 40px 0;
 }
 .conf-subtitle:hover {
     cursor: pointer;
@@ -375,20 +395,15 @@ export default {
 .el-checkbox {
     width: 330px;
     margin: 0 !important;
-    /* overflow-x: scroll;
-    overflow-y: hidden; */
     float: left;
-    /* color: rgb(133,15,31)!important; */
     padding:10px 0 10px 5px;
     cursor: pointer;
 }
 .el-checkbox__label {
     font-size: 20px!important;
-    /* color: rgb(133,15,31)!important; */
 }
 .result {
     background-color: #fff;
-    /* width: 60%; */
     margin: 0 auto;
     padding: 5px 0 5px 0;
     flex:1;
@@ -405,7 +420,7 @@ export default {
     /* font-size:1.1vw; */
     font-size:22px;
     padding-top:10px;
-    font-weight:bold;
+    font-weight: 500;
     padding: 10px 20px 8px 1vw;
 }
 .detail-info {
@@ -424,7 +439,7 @@ export default {
     text-overflow:ellipsis;
     display:-webkit-box;    
     -webkit-box-orient:vertical;
-    -webkit-line-clamp:3;
+    -webkit-line-clamp:5;
     padding: 8px 1vw 0 1vw;
     text-align:justify
 }
@@ -510,6 +525,8 @@ export default {
     display: flex;
     justify-content: space-between;
     width: 250px;
+    position: relative;
+    top: 2px;
 }
 .check-num {
     color: #A7A7A7;
